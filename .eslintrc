@@ -1,0 +1,11 @@
+{
+  "extends": "eslint-config-egg/typescript",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "semi": "off",
+    "comma-dangle": "off",
+    "@typescript-eslint/semi": "off"
+  }
+}

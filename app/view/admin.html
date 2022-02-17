@@ -1,0 +1,159 @@
+<html>
+
+<head>
+  <title>tools</title>
+  <link rel="stylesheet" href="/public/bootstrap-3.4.1-dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/public/style/reset.css" />
+  <!-- <link rel="stylesheet" href="/public/style/admin.css" /> -->
+</head>
+
+<body>
+  <div class="container">
+    <h3 class="title">导航管理</h3>
+    <h4 style="margin: 20px 0;">
+      导航列表
+      <button type="button" class="btn btn-primary pull-right" onclick="preAdd()" data-toggle="modal"
+              data-target="#add">新增</button>
+    </h4>
+    <table class="table table-striped table-bordered">
+      <thead>
+        <th class="index">序号</th>
+        <th class="name">名称</th>
+        <th class="addr">地址</th>
+        <th class="type">标签</th>
+        <th class="oper">操作</th>
+      </thead>
+      <tbody class="data-list">
+      </tbody>
+
+    </table>
+  </div>
+
+  <div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                  aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">新增导航</h4>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="exampleInputEmail1">名称</label>
+              <input type="text" class="form-control" id="name" placeholder="名称">
+            </div>
+            <div class="form-group">
+              <label for="exampleInputPassword1">链接</label>
+              <input type="text" class="form-control" id="link" placeholder="链接">
+            </div>
+            <div class="form-group">
+              <label for="exampleInputFile">标签(多个以空格分隔)</label>
+              <input type="text" class="form-control" id="type" placeholder="标签">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="add()">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="remove" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                  aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">提示</h4>
+        </div>
+        <div class="modal-body">
+          你确定要删除吗？
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="remove()">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/public/jquery/jquery-3.6.0.min.js"></script>
+  <script src="/public/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
+  <script>
+    let dataList = []
+    function queryData() {
+      $.post('/api/query', {}, (data) => {
+        dataList = data
+        $('.data-list').html(data.map((s, index) => {
+          return `<tr>
+          <td class="index">${index + 1}</td>
+          <td class="name">${s.name}</td>
+          <td class="addr">
+            <a class="btn btn-link" href="${s.link}" target="_blank" role="button">${s.link}</a>
+          </td>
+          <td class="type">${s.type}</td>
+          <td class="oper">
+            <button type="button" data-id="${s.id}" onclick="edit(event)" class="btn">编辑</button>
+            <button type="button" class="btn btn-danger" data-id="${s.id}" onclick="preRemove(event)">删除</button>
+          </td>
+        </tr>`
+        }).join(''))
+      })
+    }
+    queryData() 
+  </script>
+  <script>
+    // 删除
+    var currentId = ''
+    function remove() {
+      if (currentId) {
+
+      }
+      console.log('删除', currentId)
+      $.post('/api/remove', { id: currentId }, (data) => {
+        $('#remove').modal('hide')
+        queryData()
+      })
+    }
+    function preRemove(e) {
+      currentId = e.target.dataset.id
+      $('#remove').modal()
+    }
+  </script>
+  <script>
+    function preAdd() {
+      $("#name").val('')
+      $("#type").val('')
+      $("#link").val('')
+      currentId = ''
+    }
+
+    function add() {
+      var name = $("#name").val().trim()
+      var type = $("#type").val().trim()
+      var link = $("#link").val().trim()
+      if (!name || !link) {
+        alert('名称和链接不能为空')
+        return
+      }
+
+      $.post('/api/add', { name: name, type: type, link: link }, () => {
+        $('#add').modal('hide')
+        queryData()
+      })
+    }
+  </script>
+  <script>
+    function edit(e) {
+      currentId = e.target.dataset.id
+      var info = dataList.find(s => s.id === currentId)
+      $("#name").val(info.name)
+      $("#type").val(info.type)
+      $("#link").val(info.link)
+      $('#add').modal()
+    }
+  </script>
+</body>
+
+</html>

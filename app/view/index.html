@@ -1,0 +1,50 @@
+<html>
+
+<head>
+  <title>tools</title>
+  <link rel="stylesheet" href="/public/style/reset.css" />
+  <link rel="stylesheet" href="/public/style/index.css" />
+</head>
+
+<body>
+  <div class="container">
+    <dl class="catrgory">
+      <dt>分类:</dt>
+      <dd class="on">全部</dd>
+    </dl>
+    <dl class="menu">
+    </dl>
+  </div>
+  <script src="/public/jquery/jquery-3.6.0.min.js"></script>
+  <script>
+    $.post('/api/getTags', {}, function (data) {
+      var html = data.map(s => {
+        return `<dd onclick="changeTag(event)" data-tag="${s}">${s}</dd>`
+      }).join('')
+      $('.catrgory').html(`<dt>分类:</dt>
+      <dd class="on" onclick="changeTag(event)">全部</dd>${html}`)
+    })
+    function getMenu(type) {
+      $.post('/api/query', { type: type }, function (data) {
+        var html = data.map(s => `<dd><a href="${s.link}" target="_blank" data-id="${s.id}" onclick="link(event)">${s.name}</a></dd>`).join('')
+        $('.menu').html(html)
+      })
+    }
+
+    function link(e) {
+      $.post('/api/link', { id: e.target.dataset.id })
+    }
+
+    function changeTag(e) {
+      if (e.target.classList.contains('on')) {
+        return
+      }
+      $("dd.on").removeClass('on')
+      $(e.target).addClass('on')
+      getMenu(e.target.dataset.tag)
+    }
+    getMenu()
+  </script>
+</body>
+
+</html>
